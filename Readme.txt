@@ -1,0 +1,1 @@
+Software to plot global temperature series
