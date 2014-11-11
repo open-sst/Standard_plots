@@ -7,23 +7,67 @@ from time import sleep
 #                  ,"Data/")
 
 
-#GLOBAL TEMPERATURE SERIES
-testfile = urllib.URLopener()
-testfile.retrieve("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT.4.3.0.0.annual_ns_avg.txt" \
-                  ,"Data/HadCRUT.4.3.0.0.annual_ns_avg.txt")
 
+ncdc_version = "v3.5.4.201409"
+hadsst_version = "3.1.1.0"
+crutem_version = "4.3.0.0"
+hadcrut_version = "4.3.0.0"
+
+################
+## NCDC
+################
+#NCDC LSAT
+testfile = urllib.URLopener()
+testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.ann.land.90S.90N."+ncdc_version+".asc" \
+                  ,"Data/aravg.ann.land.90S.90N."+ncdc_version+".asc")
+
+#NCDC SST
+testfile = urllib.URLopener()
+testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.ann.ocean.90S.90N."+ncdc_version+".asc" \
+                  ,"Data/aravg.ann.ocean.90S.90N."+ncdc_version+".asc")
+
+#NCDC Monthly GMT
+testfile = urllib.URLopener()
+testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.mon.land_ocean.90S.90N."+ncdc_version+".asc" \
+                  ,"Data/aravg.mon.land_ocean.90S.90N."+ncdc_version+".asc")
+
+#NCDC Annual GMT
+testfile = urllib.URLopener()
+testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.ann.land_ocean.90S.90N."+ncdc_version+".asc" \
+                  ,"Data/aravg.ann.land_ocean.90S.90N."+ncdc_version+".asc")
+
+
+########################
+## Hadley Centre / UEA
+########################
+#CRUTEM4
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.metoffice.gov.uk/hadobs/crutem4/data/diagnostics/global/nh+sh/CRUTEM."+crutem_version+".global_n+s" \
+                  ,"Data/CRUTEM."+crutem_version+".global_n+s")
+
+#HadSST3
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.metoffice.gov.uk/hadobs/hadsst3/data/HadSST."+hadsst_version+"/diagnostics/HadSST."+hadsst_version+"_annual_globe_ts.txt" \
+                  ,"Data/HadSST."+hadsst_version+"_annual_globe_ts.txt")
+
+#HadCRUT 4 GLOBAL TEMPERATURE SERIES
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT."+hadcrut_version+".annual_ns_avg.txt" \
+                  ,"Data/HadCRUT."+hadcrut_version+".annual_ns_avg.txt")
+
+
+assert False
+
+
+#GISTEMP
+#Do not use: returns 403 Forbidden error
 #testfile = urllib.URLopener()
 #testfile.retrieve("http://data.giss.nasa.gov/gistemp/tabledata_v3/GLB.Ts+dSST.txt" \
 #                  ,"Data/GLB.Ts+dSST.txt")
 
 
-testfile = urllib.URLopener()
-testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.mon.land_ocean.90S.90N.v3.5.4.201409.asc" \
-                  ,"Data/aravg.mon.land_ocean.90S.90N.v3.5.4.201409.asc")
 
-testfile = urllib.URLopener()
-testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.ann.land_ocean.90S.90N.v3.5.4.201409.asc" \
-                  ,"Data/aravg.ann.land_ocean.90S.90N.v3.5.4.201409.asc")
+
 
 
 
