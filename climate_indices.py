@@ -17,11 +17,21 @@ class ts:
     def plot_ts(self):
         plt.plot(self.time_axis,self.data)
         plt.plot(self.time_axis,np.zeros(len(self.time_axis)),color="Black")
-        plt.plot([2014,2014],[-5,5],color="Red")
+        plt.plot([2014,2014],[-1,1],color="Red")
         plt.show()
 
     def rebaseline(self,year1,year2):
-        print
+        clim = np.zeros(12)
+        climcounts = np.zeros(12)
+        for i in range(0,len(self.years)):
+            if self.years[i] >= year1 and self.years[i] <= year2:
+                clim[self.months[i]-1] += self.data[i]
+                climcounts[self.months[i]-1] += 1.0
+        for i in range(0,12):
+            clim[i] /= climcounts[i]
+        for i in range(0,len(self.years)):
+            self.data[i] -= clim[self.months[i]-1]
+                       
 
 def slices(s, *args):
     position = 0
@@ -169,12 +179,15 @@ def read_aao():
     return aao
 
 nino1 = read_nino1()
+nino1.rebaseline(1981,2010)
 nino1.plot_ts()
 
 nino4 = read_nino4()
+nino4.rebaseline(1981,2010)
 nino4.plot_ts()
 
 nino34 = read_nino34()
+nino34.rebaseline(1981,2010)
 nino34.plot_ts()
 
 aao = read_aao()
