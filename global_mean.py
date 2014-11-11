@@ -9,6 +9,16 @@ class time_series:
         self.data = data
         self.lounc = lounc
         self.hiunc = hiunc
+        self.name = ""
+
+    def add_year(self,year,data,lounc,hiunc):
+        self.times.append(year)
+        self.data.append(data)
+        self.lounc.append(lounc)
+        self.hiunc.append(hiunc)
+
+    def add_name(self,name):
+        self.name = name
 
     def rebaseline(self,year1,year2):
         ind1 = self.times.index(year1)
@@ -20,34 +30,42 @@ class time_series:
             self.hiunc[i] -= clim
 
     def print_ordered_ts(self,topten):
+        print self.name+" Top "+str(topten)
         order = self.data[:]
         order.sort()
         for i in range(len(order)-topten,len(order)):
-            print len(order)-i,self.times[self.data.index(order[i])], \
+            print("%3d %4d %7.3f %7.3f %7.3f " % ( len(order)-i,self.times[self.data.index(order[i])], \
                                self.data[self.data.index(order[i])], \
                                self.lounc[self.data.index(order[i])], \
-                               self.hiunc[self.data.index(order[i])]
+                               self.hiunc[self.data.index(order[i])]))
 
     def print_ts(self):
+        print self.name+" Annual averages"
         for i in range(0,len(self.data)):
-            print i,self.times[i],self.data[i]
+            print("%3d %4d %7.3f" % (i,self.times[i],self.data[i]))
 
 
     def print_running_mean(self,filter_width):
+        print self.name+" Running mean"
         for i in range(filter_width-1,len(self.data)):
-            print i,self.times[i],np.mean(self.data[i-filter_width+1:i])
+            print ("%3d %4d %7.3f" % (i,self.times[i],np.mean(self.data[i-filter_width+1:i])))
 
     def plot_ts(self, color):
-        plt.plot(self.times, self.data, linewidth=2.0, color=color)
+        plt.plot(self.times, self.data, linewidth=2.0, color=color, label=self.name)
 
     def plot_ts_with_unc(self, colora, colorbk):
-        plt.plot(self.times, self.data, linewidth=2.0, color=colora)
+        plt.plot(self.times, self.data, linewidth=2.0, color=colora, label=self.name)
         plt.fill_between(self.times, self.lounc, self.hiunc,
                 facecolor=colorbk,color=colorbk, alpha=0.5,
                 label='1 sigma range')
         plt.plot(self.times, self.hiunc, linewidth=1.0, color=colora, alpha=0.5)
         plt.plot(self.times, self.lounc, linewidth=1.0, color=colora, alpha=0.5)
-        plt.axis((1848,2016,-0.79,0.79))
+
+        mx = max(self.hiunc)
+        mn = min(self.lounc)
+        delta = 0.1 * (mx-mn)
+
+        plt.axis((1848,2016,mn-delta,mx+delta))
 
     def plot_decadal(self,filter_width):
 
@@ -66,12 +84,114 @@ class time_series:
             plt.plot([decadal_years[i]-filter_width+1,decadal_years[i]],[decadal[i],decadal[i]], color="Red")
         plt.show()
 
+    def plot_floating_skyscraper_diagram(self):
+#name fail. Actually: entire plot fail. It looks awful
+        plt.plot(np.zeros(50), color="White")
+
+        for i in range(0,len(self.times)):
+
+            y = self.times[i]
+            d = self.data[i]
+            d1 = self.lounc[i]
+            d2 = self.hiunc[i]
+
+            color = "Silver"
+
+            if nino_year(y) == 0:
+                color = "Silver"
+            elif nino_year(y) == -1:
+                color = "DodgerBlue"
+            elif nino_year(y) == 1:
+                color = "FireBrick"
+
+            delta = 0.45
+           
+            poly = Polygon(zip([y-delta,y+delta,y+delta,y-delta],\
+                               [d1,d1,d2,d2]),facecolor=color,edgecolor="Black")
+            plt.gca().add_patch(poly)
+            plt.plot([y-delta,y+delta],[d,d],color="Black")
+
+#        plt.plot([1949.5,2015],[0,0],color="Black")
+#        plt.axis((1949.5,2015,-0.32,0.62))
+
+        mx = max(self.hiunc[self.times.index(1950):])
+        mn = min(self.lounc[self.times.index(1950):])
+        delta = 0.1 * (mx-mn)
+
+        plt.axis((1949,2016,mn-delta,mx+delta))
+
+        
+        plt.show()
+
+
+    def plot_skyscraper_diagram(self):
+
+        plt.plot(np.zeros(50), color="White")
+
+        for i in range(0,len(self.times)):
+
+            y = self.times[i]
+            d = self.data[i]
+
+            color = "Silver"
+
+            if nino_year(y) == 0:
+                color = "Silver"
+            elif nino_year(y) == -1:
+                color = "DodgerBlue"
+            elif nino_year(y) == 1:
+                color = "FireBrick"
+
+            delta = 0.45
+           
+            poly = Polygon(zip([y-delta,y+delta,y+delta,y-delta],\
+                               [0,0,d,d]),facecolor=color,edgecolor="Black")
+            plt.gca().add_patch(poly)
+
+        plt.xlabel('Year', fontsize=18)
+        plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+
+#spoof some data points to get an appropriate legend
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='FireBrick',edgecolor="Black",label="El Nino")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Silver',edgecolor="Black",label="Neutral")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='DodgerBlue',edgecolor="Black",label="La Nina")
+        plt.gca().add_patch(poly)
+        plt.legend(loc='best')
+
+        plt.plot([1949.5,2015.5],[0,0],color="Black")
+        plt.axis((1949.5,2015.5,-0.32,0.62))
+        plt.show()
+
 
     def plot_ranking_diagram(self):
         order = self.data[:]
         order.sort()
 
-        plt.plot(np.zeros(50), color="White")
+        plt.plot([0,0],[0,0], color="White")
+
+        plt.xlabel('Rank', fontsize=18)
+        plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+
+#spoof some data points to get an appropriate legend
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='DarkRed',edgecolor="Black",label="2011-2014")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Red',edgecolor="Black",label="2001-2010")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='DarkOrange',edgecolor="Black",label="1991-2000")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Gold',edgecolor="Black",label="1971-1990")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Green',edgecolor="Black",label="1951-1970")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='DodgerBlue',edgecolor="Black",label="1931-1950")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Navy',edgecolor="Black",label="1911-1930")
+        plt.gca().add_patch(poly)
+        poly = Polygon(zip([0,0,0,0],[0,0,0,0]),facecolor='Purple',edgecolor="Black",label="1850-1910")
+        plt.gca().add_patch(poly)
+        plt.legend(loc='best')
 
         for i in range(0,50):
 
@@ -109,7 +229,19 @@ class time_series:
         plt.show()
 
 
+def nino_year(year):
+    result = 0 #neutral
 
+    elninos = [1958, 1966, 1973, 1983, 1987, 1988, 1998, 2003, 2010]
+    laninas = [1950, 1955, 1956, 1974, 1976, 1989, 1999, 2000, 2008, 2011]
+ 
+    if year in laninas:
+        result = -1
+    elif year in elninos:
+        result = 1
+
+    return result
+    
 
 def combine_series(series1, series2, series3):
         
@@ -139,10 +271,9 @@ def combine_series(series1, series2, series3):
 
     return combined
 
+def read_hadley(filename):
 
-
-def read_hadcrut4():
-    f = open('Data/HadCRUT.4.3.0.0.annual_ns_avg.txt', 'r')
+    f = open(filename, 'r')
 
     hadcrut_year = []
     hadcrut_anom = []
@@ -155,20 +286,30 @@ def read_hadcrut4():
         columns = line.split()
         hadcrut_year.append(float(columns[0]))
         hadcrut_anom.append(float(columns[1]))
-        hadcrut_upper_unc.append(float(columns[10]))
-        hadcrut_lower_unc.append(float(columns[11]))
+        hadcrut_upper_unc.append(float(columns[11]))
+        hadcrut_lower_unc.append(float(columns[10]))
     
     f.close()
     had_ts = time_series(hadcrut_year,
                          hadcrut_anom,
                          hadcrut_lower_unc,
                          hadcrut_upper_unc)
+
     return had_ts
 
 
-def read_ncdc():
-    f = open('Data/aravg.ann.land_ocean.90S.90N.v3.5.4.201409.asc', 'r')
+def read_hadsst3(version):
+    return read_hadley('Data/HadSST.'+version+'_annual_globe_ts.txt')
 
+def read_crutem4(version):
+    return read_hadley('Data/CRUTEM.'+version+'.global_n+s')
+
+def read_hadcrut4(version):
+    return read_hadley('Data/HadCRUT.'+version+'.annual_ns_avg.txt')
+
+
+def read_ncdc_format(filename):
+    f = open(filename, 'r')
     ncdc_year = []
     ncdc_anom = []
     ncdc_lounc = []
@@ -191,6 +332,18 @@ def read_ncdc():
                           ncdc_hiunc)
 
     return ncdc_ts
+
+
+def read_ncdc_sst(version):
+    return read_ncdc_format('Data/aravg.ann.ocean.90S.90N.'+version+'.asc')
+
+def read_ncdc_lsat(version):
+    return read_ncdc_format('Data/aravg.ann.land.90S.90N.'+version+'.asc')
+
+def read_ncdc(version):
+    return read_ncdc_format('Data/aravg.ann.land_ocean.90S.90N.'+version+'.asc')
+
+
 
 def read_giss_block(f, block_length, giss_year, giss_anom):
     line = f.readline()
@@ -258,35 +411,92 @@ def read_giss():
 ##
 ###########################
 
-had_ts = read_hadcrut4()
+ncdc_version = "v3.5.4.201409"
+hadsst_version = "3.1.1.0"
+crutem_version = "4.3.0.0"
+hadcrut_version = "4.3.0.0"
 
 
-ncdc_ts = read_ncdc()
+print("GLOBAL AVERAGE TEMPERATURES")
+
+had_ts = read_hadcrut4(hadcrut_version)
+had_ts.add_name("HadCRUT."+hadcrut_version)
+
+ncdc_ts = read_ncdc(ncdc_version)
 ncdc_ts.rebaseline(1961,1990)
+ncdc_ts.add_name("MLOST")
 
 giss_ts = read_giss()
 giss_ts.rebaseline(1961,1990)
+giss_ts.add_name("GISTEMP")
 
+combined_ts = combine_series(had_ts, ncdc_ts, giss_ts)
+combined_ts.add_name("Combined")
+
+combined_ts.plot_skyscraper_diagram()
+#combined_ts.plot_floating_skyscraper_diagram()
+
+#make diagram showing all three data sets
 had_ts.plot_ts_with_unc('Black','AliceBlue')
 giss_ts.plot_ts('Red')
 ncdc_ts.plot_ts('DeepSkyBlue')
-
-combined_ts = combine_series(had_ts, ncdc_ts, giss_ts)
-
-plt.savefig('gmt.png', bbox_inches='tight')
+#plt.savefig('gmt.png', bbox_inches='tight')
+plt.xlabel('Year', fontsize=18)
+plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+plt.legend(loc='best')
+plt.xticks(range(1860,2020,20), fontsize = 16)
+plt.yticks(np.arange(-0.8,0.8,0.2), fontsize = 16)
 plt.show()
-
-combined_ts.plot_ts_with_unc('Black','AliceBlue')
-plt.show()
-
-ncdc_ts.plot_ranking_diagram()
-giss_ts.plot_ranking_diagram()
 
 combined_ts.plot_ranking_diagram()
 combined_ts.plot_decadal(10)
 
 combined_ts.print_ordered_ts(5)
 
-#had_ts.print_ordered_ts(5)
-#ncdc_ts.print_ordered_ts(5)
-#giss_ts.print_ordered_ts(5)
+had_ts.print_ordered_ts(5)
+ncdc_ts.print_ordered_ts(5)
+giss_ts.print_ordered_ts(5)
+
+print("")
+print("Global average SST")
+
+ncdc_sst_ts = read_ncdc_sst(ncdc_version)
+ncdc_sst_ts.rebaseline(1961,1990)
+ncdc_sst_ts.add_name("ERSSTv3")
+ncdc_sst_ts.print_ordered_ts(5)
+
+hadsst_ts = read_hadsst3(hadsst_version)
+latest_year = np.mean([0.342, 0.314, 0.347, 0.478, 0.477, 0.563, 0.551, 0.644, 0.574, 0.529])
+hadsst_ts.add_year(2014,latest_year,latest_year-0.1,latest_year+0.1)
+hadsst_ts.add_name("HadSST."+hadsst_version)
+hadsst_ts.print_ordered_ts(5)
+
+hadsst_ts.plot_ts_with_unc('Black','AliceBlue')
+ncdc_sst_ts.plot_ts_with_unc('DeepSkyBlue','Yellow')
+plt.xlabel('Year', fontsize=18)
+plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+plt.legend(loc='best')
+plt.show()
+
+print("")
+print("Global average LSAT")
+
+ncdc_lsat_ts = read_ncdc_lsat(ncdc_version)
+ncdc_lsat_ts.rebaseline(1961,1990)
+ncdc_lsat_ts.add_name("NCDC LSAT")
+ncdc_lsat_ts.print_ordered_ts(10)
+
+print("")
+
+crutem4_ts = read_crutem4(crutem_version)
+crutem4_ts.add_name("CRUTEM."+crutem_version)
+crutem4_ts.print_ordered_ts(10)
+
+crutem4_ts.plot_ts_with_unc('Black','AliceBlue')
+ncdc_lsat_ts.plot_ts_with_unc('DeepSkyBlue','Yellow')
+plt.xlabel('Year', fontsize=18)
+plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+plt.legend(loc='best')#plt.savefig('gmt.png', bbox_inches='tight')
+plt.show()
+
+
