@@ -1,6 +1,64 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 from matplotlib.patches import Polygon
+
+class monthly_time_series:
+
+    def __init__(self,years,months,data):
+        self.years = years
+        self.months = months
+        self.data = data
+        self.make_time_axis()
+
+    def make_time_axis(self):
+        self.time_axis = self.years[:]
+        for i in range(0,len(self.time_axis)):
+            self.time_axis[i] += (self.months[i]-1.)/12.
+
+    def plot_ts(self):
+        plt.plot(self.time_axis,self.data)
+        plt.plot(self.time_axis,np.zeros(len(self.time_axis)),color="Black")
+        plt.plot([2014,2014],[-1,1],color="Red")
+        plt.show()
+
+    def rebaseline(self,year1,year2):
+        #choose new climatology period
+        clim = np.zeros(12)
+        climcounts = np.zeros(12)
+        for i in range(0,len(self.years)):
+            if self.years[i] >= year1 and self.years[i] <= year2:
+                clim[self.months[i]-1] += self.data[i]
+                climcounts[self.months[i]-1] += 1.0
+        for i in range(0,12):
+            clim[i] /= climcounts[i]
+        for i in range(0,len(self.years)):
+            self.data[i] -= clim[self.months[i]-1]
+                       
+    def annualise(self):
+        #go from monthly averages to annual averages
+        fyear = int(min(self.years))
+        lyear = int(max(self.years))
+
+        annual_years = []
+        annual_data = []
+        annual_data_ct = []
+
+        for i in range(fyear,lyear+1):
+            annual_years.append(0)
+            annual_data.append(0)
+            annual_data_ct.append(0)
+
+        for i in range(0,len(self.data)):
+            y = int(self.years[i])
+            annual_data[y-fyear] += self.data[i]
+            annual_data_ct[y-fyear] += 1.0
+            annual_years[y-fyear] = y
+
+        for i in range(0,len(annual_data)):
+            annual_data[i] /= annual_data_ct[i]
+
+        return time_series(annual_years,annual_data,annual_data,annual_data)
 
 class time_series:
 
@@ -21,15 +79,17 @@ class time_series:
         self.name = name
 
     def rebaseline(self,year1,year2):
+        #change baseline for anomalies
         ind1 = self.times.index(year1)
         ind2 = self.times.index(year2)
-        clim = np.mean(self.data[ind1:ind2])
+        clim = np.mean(self.data[ind1:ind2+1])
         for i in range(0,len(self.data)):
             self.data[i] -= clim
             self.lounc[i] -= clim
             self.hiunc[i] -= clim
 
     def print_ordered_ts(self,topten):
+        #print the warmest n years where n=topten
         print self.name+" Top "+str(topten)
         order = self.data[:]
         order.sort()
@@ -82,45 +142,6 @@ class time_series:
         plt.plot(self.times,self.data)
         for i in range(0,len(decadal)):
             plt.plot([decadal_years[i]-filter_width+1,decadal_years[i]],[decadal[i],decadal[i]], color="Red")
-        plt.show()
-
-    def plot_floating_skyscraper_diagram(self):
-#name fail. Actually: entire plot fail. It looks awful
-        plt.plot(np.zeros(50), color="White")
-
-        for i in range(0,len(self.times)):
-
-            y = self.times[i]
-            d = self.data[i]
-            d1 = self.lounc[i]
-            d2 = self.hiunc[i]
-
-            color = "Silver"
-
-            if nino_year(y) == 0:
-                color = "Silver"
-            elif nino_year(y) == -1:
-                color = "DodgerBlue"
-            elif nino_year(y) == 1:
-                color = "FireBrick"
-
-            delta = 0.45
-           
-            poly = Polygon(zip([y-delta,y+delta,y+delta,y-delta],\
-                               [d1,d1,d2,d2]),facecolor=color,edgecolor="Black")
-            plt.gca().add_patch(poly)
-            plt.plot([y-delta,y+delta],[d,d],color="Black")
-
-#        plt.plot([1949.5,2015],[0,0],color="Black")
-#        plt.axis((1949.5,2015,-0.32,0.62))
-
-        mx = max(self.hiunc[self.times.index(1950):])
-        mn = min(self.lounc[self.times.index(1950):])
-        delta = 0.1 * (mx-mn)
-
-        plt.axis((1949,2016,mn-delta,mx+delta))
-
-        
         plt.show()
 
 
@@ -215,21 +236,27 @@ class time_series:
                 col = "DarkRed"
             
 
+#plot uncertainty range as coloured bar
             lo = self.lounc[self.data.index(order[len(order)-i-1])]
             hi = self.hiunc[self.data.index(order[len(order)-i-1])]
             mi = self.data[self.data.index(order[len(order)-i-1])]
-            
             poly = Polygon(zip([i+1-0.5,i+1+0.5,i+1+0.5,i+1-0.5],\
                                [lo,lo,hi,hi]),facecolor=col,edgecolor="White")
             plt.gca().add_patch(poly)
 
+#plot medians as black dash
             plt.plot([i+1-0.4,i+1+0.4],[mi,mi],color="Black")
+
+#add year lables to each coloured bar
+            plt.text(i+0.7,hi+0.05,str(int(this_year)),fontsize=10,rotation=90)
 
         plt.axis((0,51,-0.22,0.79))
         plt.show()
 
 
 def nino_year(year):
+
+    #based on CPC Nino 3.4 apparently.
     result = 0 #neutral
 
     elninos = [1958, 1966, 1973, 1983, 1987, 1988, 1998, 2003, 2010]
@@ -244,7 +271,8 @@ def nino_year(year):
     
 
 def combine_series(series1, series2, series3):
-        
+    #average together three annual time series and return an annual time series
+    #hardcoded to do this from 1880 to 2014
     comb_year = []
     comb_anom = []
     comb_upper_unc = []
@@ -271,8 +299,9 @@ def combine_series(series1, series2, series3):
 
     return combined
 
-def read_hadley(filename):
 
+def read_hadley(filename):
+#read hadley format annual data sets and make annual time series out of them
     f = open(filename, 'r')
 
     hadcrut_year = []
@@ -345,6 +374,55 @@ def read_ncdc(version):
 
 
 
+def read_giss_block_monthly(f, block_length, giss_year, giss_month, giss_anom):
+#burn first two pointless lines of each block
+    line = f.readline()
+    line = f.readline()
+    for j in range(1,block_length+1):
+        line = f.readline()
+        columns = line.split()
+        for i in range(1,13):
+            giss_year.append(float(columns[0]))
+            giss_month.append(float(i))
+            giss_anom.append(float(columns[i])/100.)
+            
+    return (giss_year, giss_month, giss_anom)
+
+def read_giss_monthly():
+    f = open('Data/GLB.Ts+dSST.txt','r')
+    
+    giss_year = []
+    giss_month = []
+    giss_anom = []
+  
+#read header information and discard
+    for i in range(1,7):
+        f.readline()
+
+#read first block of 21 years
+    giss_year, giss_month, giss_anom = read_giss_block_monthly(f, 21, giss_year, giss_month, giss_anom)
+#read five blocks of 20 years   
+    for i in range(1,6):
+        giss_year, giss_month, giss_anom = read_giss_block_monthly(f, 20, giss_year, giss_month, giss_anom)
+#final block has less than 20
+    giss_year, giss_month, giss_anom = read_giss_block_monthly(f, 13, giss_year, giss_month, giss_anom)
+
+#final year is incomplete so calculate from monthlies
+    g = f.readline()
+    columns = g.split()
+
+    for i in range(1,13):
+        if columns[i] != '****':
+            giss_year.append(float(columns[0]))
+            giss_month.append(float(i))
+            giss_anom.append(float(columns[i])/100.)
+    
+    giss_ts = monthly_time_series(giss_year,
+                                  giss_month,
+                                  giss_anom)
+
+    return giss_ts
+
 def read_giss_block(f, block_length, giss_year, giss_anom):
     line = f.readline()
     line = f.readline()
@@ -354,6 +432,7 @@ def read_giss_block(f, block_length, giss_year, giss_anom):
         giss_year.append(float(columns[0]))
         giss_anom.append(float(columns[13])/100.)
     return (giss_year,giss_anom)
+
 
 def read_giss():
     f = open('Data/GLB.Ts+dSST.txt','r')
@@ -406,10 +485,17 @@ def read_giss():
 
 
 ###########################
+###########################
+###########################
+###########################
 ##
-##  MAIN STRIP
+##      MAIN STRIP
 ##
 ###########################
+###########################
+###########################
+###########################
+
 
 ncdc_version = "v3.5.4.201409"
 hadsst_version = "3.1.1.0"
@@ -426,29 +512,33 @@ ncdc_ts = read_ncdc(ncdc_version)
 ncdc_ts.rebaseline(1961,1990)
 ncdc_ts.add_name("MLOST")
 
-giss_ts = read_giss()
-giss_ts.rebaseline(1961,1990)
+#giss_ts = read_giss()
+#giss_ts.rebaseline(1961,1990)
+giss_ts_monthly = read_giss_monthly()
+giss_ts_monthly.rebaseline(1961,1990)
+giss_ts = giss_ts_monthly.annualise()
 giss_ts.add_name("GISTEMP")
 
 combined_ts = combine_series(had_ts, ncdc_ts, giss_ts)
 combined_ts.add_name("Combined")
 
+combined_ts.plot_ranking_diagram()
+
 combined_ts.plot_skyscraper_diagram()
-#combined_ts.plot_floating_skyscraper_diagram()
 
 #make diagram showing all three data sets
 had_ts.plot_ts_with_unc('Black','AliceBlue')
 giss_ts.plot_ts('Red')
 ncdc_ts.plot_ts('DeepSkyBlue')
-#plt.savefig('gmt.png', bbox_inches='tight')
 plt.xlabel('Year', fontsize=18)
 plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
 plt.legend(loc='best')
 plt.xticks(range(1860,2020,20), fontsize = 16)
 plt.yticks(np.arange(-0.8,0.8,0.2), fontsize = 16)
+#plt.savefig('gmt.png', bbox_inches='tight')
 plt.show()
 
-combined_ts.plot_ranking_diagram()
+
 combined_ts.plot_decadal(10)
 
 combined_ts.print_ordered_ts(5)
@@ -496,7 +586,7 @@ crutem4_ts.plot_ts_with_unc('Black','AliceBlue')
 ncdc_lsat_ts.plot_ts_with_unc('DeepSkyBlue','Yellow')
 plt.xlabel('Year', fontsize=18)
 plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
-plt.legend(loc='best')#plt.savefig('gmt.png', bbox_inches='tight')
+plt.legend(loc='best')
 plt.show()
 
 
