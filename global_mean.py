@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 from matplotlib.patches import Polygon
 
 class monthly_time_series:
@@ -484,6 +483,29 @@ def read_giss():
     return giss_ts
 
 
+def read_cowtan_and_way(version):
+    f = open('Data/had4_krig_annual_'+version+'.txt','r')
+    
+    cw_year = []
+    cw_anom = []
+    cw_lounc = []
+    cw_hiunc = []
+
+    for line in f:
+        columns = line.split()
+        cw_year.append(int(columns[0]))
+        cw_anom.append(float(columns[1]))
+        cw_lounc.append(float(columns[1]) - 2* float(columns[2]))
+        cw_hiunc.append(float(columns[1]) + 2* float(columns[2]))
+        
+    cw_ts = time_series(cw_year,
+                          cw_anom,
+                          cw_lounc,
+                          cw_hiunc)
+
+    return cw_ts
+
+
 ###########################
 ###########################
 ###########################
@@ -501,9 +523,15 @@ ncdc_version = "v3.5.4.201409"
 hadsst_version = "3.1.1.0"
 crutem_version = "4.3.0.0"
 hadcrut_version = "4.3.0.0"
+cowtan_and_way_version = "v2_0_0"
 
 
 print("GLOBAL AVERAGE TEMPERATURES")
+
+cw_ts = read_cowtan_and_way(cowtan_and_way_version)
+latest_year = np.mean([0.594, 0.372, 0.589, 0.683, 0.688, 0.590, 0.505, 0.703, 0.718])
+cw_ts.add_year(2014,latest_year,latest_year-0.1,latest_year+0.1)
+cw_ts.add_name("Cowtan and Way")
 
 had_ts = read_hadcrut4(hadcrut_version)
 had_ts.add_name("HadCRUT."+hadcrut_version)
@@ -546,6 +574,7 @@ combined_ts.print_ordered_ts(5)
 had_ts.print_ordered_ts(5)
 ncdc_ts.print_ordered_ts(5)
 giss_ts.print_ordered_ts(5)
+cw_ts.print_ordered_ts(5)
 
 print("")
 print("Global average SST")

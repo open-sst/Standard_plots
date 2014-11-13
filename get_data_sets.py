@@ -7,11 +7,24 @@ from time import sleep
 #                  ,"Data/")
 
 
-
 ncdc_version = "v3.5.4.201409"
 hadsst_version = "3.1.1.0"
 crutem_version = "4.3.0.0"
 hadcrut_version = "4.3.0.0"
+cowtan_and_way_version = "v2_0_0"
+
+#################
+## Cowtan and Way
+#################
+testfile = urllib.URLopener()
+testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_krig_annual_"+cowtan_and_way_version+".txt" \
+                  ,"Data/had4_krig_annual_"+cowtan_and_way_version+".txt")
+
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_krig_"+cowtan_and_way_version+".txt" \
+                  ,"Data/had4_krig_"+cowtan_and_way_version+".txt")
+
 
 ################
 ## NCDC
