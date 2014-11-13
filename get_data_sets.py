@@ -25,6 +25,17 @@ testfile = urllib.URLopener()
 testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_krig_"+cowtan_and_way_version+".txt" \
                   ,"Data/had4_krig_"+cowtan_and_way_version+".txt")
 
+#Hybrid version from 1979
+testfile = urllib.URLopener()
+testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_short_uah_"+cowtan_and_way_version+".txt" \
+                  ,"Data/had4_short_uah_"+cowtan_and_way_version+".txt")
+
+#Hybrid annual 
+testfile = urllib.URLopener()
+testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_short_uah_annual_"+cowtan_and_way_version+".txt" \
+                  ,"Data/had4_short_uah_annual_"+cowtan_and_way_version+".txt")
+
+assert False
 
 ################
 ## NCDC

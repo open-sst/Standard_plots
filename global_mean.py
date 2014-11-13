@@ -505,6 +505,28 @@ def read_cowtan_and_way(version):
 
     return cw_ts
 
+def read_cowtan_and_way_hybrid(version):
+    f = open('Data/had4_short_uah_annual_'+version+'.txt','r')
+    
+    cw_year = []
+    cw_anom = []
+    cw_lounc = []
+    cw_hiunc = []
+
+    for line in f:
+        columns = line.split()
+        cw_year.append(int(columns[0]))
+        cw_anom.append(float(columns[1]))
+        cw_lounc.append(float(columns[1]) - 2* float(columns[2]))
+        cw_hiunc.append(float(columns[1]) + 2* float(columns[2]))
+        
+    cw_ts = time_series(cw_year,
+                          cw_anom,
+                          cw_lounc,
+                          cw_hiunc)
+
+    return cw_ts
+
 
 ###########################
 ###########################
@@ -527,6 +549,11 @@ cowtan_and_way_version = "v2_0_0"
 
 
 print("GLOBAL AVERAGE TEMPERATURES")
+
+cwh_ts = read_cowtan_and_way_hybrid(cowtan_and_way_version)
+latest_year = np.mean([0.311, 0.049, 0.250, 0.367, 0.416, 0.283, 0.204, 0.406, 0.432])
+cwh_ts.add_year(2014,latest_year,latest_year-0.1,latest_year+0.1)
+cwh_ts.add_name("Cowtan and Way Hybrid")
 
 cw_ts = read_cowtan_and_way(cowtan_and_way_version)
 latest_year = np.mean([0.594, 0.372, 0.589, 0.683, 0.688, 0.590, 0.505, 0.703, 0.718])
@@ -575,6 +602,7 @@ had_ts.print_ordered_ts(5)
 ncdc_ts.print_ordered_ts(5)
 giss_ts.print_ordered_ts(5)
 cw_ts.print_ordered_ts(5)
+cwh_ts.print_ordered_ts(5)
 
 print("")
 print("Global average SST")
