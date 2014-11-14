@@ -12,6 +12,17 @@ hadsst_version = "3.1.1.0"
 crutem_version = "4.3.0.0"
 hadcrut_version = "4.3.0.0"
 cowtan_and_way_version = "v2_0_0"
+uah_version = "5.6"
+
+##############
+## UAH MSU
+##############
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.nsstc.uah.edu/data/msu/t2lt/uahncdc_lt_"+uah_version+".txt" \
+                  ,"Data/uahncdc_lt_"+uah_version+".txt")
+assert False
+
 
 #################
 ## Cowtan and Way
@@ -35,7 +46,6 @@ testfile = urllib.URLopener()
 testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_short_uah_annual_"+cowtan_and_way_version+".txt" \
                   ,"Data/had4_short_uah_annual_"+cowtan_and_way_version+".txt")
 
-assert False
 
 ################
 ## NCDC
