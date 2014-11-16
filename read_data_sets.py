@@ -1,6 +1,34 @@
 import numpy as np
 from time_series import *
 
+def read_jisao_pdo():
+    f=open("Data/PDO.latest",'r')
+
+    for i in range(1,32):
+        f.readline()
+
+    pdo_year = []
+    pdo_month = []
+    pdo_data = []
+
+    for line in f:
+        line = line.strip()
+        if line != "":
+            columns = line.split()
+            year = columns[0].split('*')
+            for m in range(1,len(columns)):
+                pdo_year.append(float(year[0]))
+                pdo_month.append(float(m))
+                pdo_data.append(float(columns[m]))
+        else:
+            break
+            
+    f.close()
+    
+    pdo_ts = monthly_time_series(pdo_year, pdo_month, pdo_data)
+
+    return pdo_ts
+
 def read_uah(version="5.6"):
     f=open("Data/uahncdc_lt_"+version+".txt",'r')
 
@@ -28,6 +56,31 @@ def read_uah(version="5.6"):
     uah_ts = monthly_time_series(uah_year, uah_month, uah_data)
 
     return uah_ts
+
+def read_hadley_monthly(filename):
+    f = open(filename, 'r')
+    hadcrut_year = []
+    hadcrut_anom = []
+    hadcrut_month = []
+
+    # Loop over lines and extract variables of interest
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+        ym = columns[0].split('/')
+        hadcrut_year.append(float(ym[0]))
+        hadcrut_month.append(float(ym[1]))
+        hadcrut_anom.append(float(columns[1]))
+    
+    f.close()
+    had_ts = monthly_time_series(hadcrut_year,
+                                 hadcrut_month,
+                                 hadcrut_anom)
+
+    return had_ts
+    
+def read_hadcrut4_monthly(version):
+    return read_hadley_monthly('Data/HadCRUT.'+version+'.monthly_ns_avg.txt')
 
 def read_hadley(filename):
 #read hadley format annual data sets and make annual time series out of them
@@ -65,6 +118,31 @@ def read_crutem4(version):
 def read_hadcrut4(version):
     return read_hadley('Data/HadCRUT.'+version+'.annual_ns_avg.txt')
 
+
+def read_ncdc_format_monthly(filename):
+    f = open(filename, 'r')
+    ncdc_year = []
+    ncdc_month = []
+    ncdc_anom = []
+
+    # Loop over lines and extract variables of interest
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+        ncdc_year.append(float(columns[0]))
+        ncdc_month.append(float(columns[1]) )
+        ncdc_anom.append(float(columns[2]))
+
+    f.close()
+
+    ncdc_ts = monthly_time_series(ncdc_year,
+                                  ncdc_month,
+                                  ncdc_anom)
+
+    return ncdc_ts
+    
+def read_ncdc_monthly(version):
+    return read_ncdc_format_monthly('Data/aravg.mon.land_ocean.90S.90N.'+version+'.asc')
 
 def read_ncdc_format(filename):
     f = open(filename, 'r')
