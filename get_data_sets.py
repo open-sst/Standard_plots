@@ -15,14 +15,22 @@ cowtan_and_way_version = "v2_0_0"
 uah_version = "5.6"
 
 ##############
+## JISAO PDO
+##############
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://jisao.washington.edu/pdo/PDO.latest" \
+                  ,"Data/PDO.latest")
+
+assert False
+
+##############
 ## UAH MSU
 ##############
 
 testfile = urllib.URLopener()
 testfile.retrieve("http://www.nsstc.uah.edu/data/msu/t2lt/uahncdc_lt_"+uah_version+".txt" \
                   ,"Data/uahncdc_lt_"+uah_version+".txt")
-assert False
-
 
 #################
 ## Cowtan and Way
@@ -89,7 +97,12 @@ testfile = urllib.URLopener()
 testfile.retrieve("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT."+hadcrut_version+".annual_ns_avg.txt" \
                   ,"Data/HadCRUT."+hadcrut_version+".annual_ns_avg.txt")
 
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.metoffice.gov.uk/hadobs/hadcrut4/data/current/time_series/HadCRUT."+hadcrut_version+".monthly_ns_avg.txt" \
+                  ,"Data/HadCRUT."+hadcrut_version+".monthly_ns_avg.txt")
 
+
+                  
 assert False
 
 
