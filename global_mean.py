@@ -154,4 +154,28 @@ plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
 plt.legend(loc='best')
 plt.show()
 
+print("")
+print("Year to date comparisons")
 
+had_monthly = read_hadcrut4_monthly(hadcrut_version)
+had_ts = had_monthly.annualise(9)
+had_ts.add_name("HadCRUT")
+
+ncdc_monthly = read_ncdc_monthly(ncdc_version)
+ncdc_monthly.rebaseline(1961,1990)
+ncdc_ts = ncdc_monthly.annualise(9)
+ncdc_ts.add_name("NCDC")
+
+giss_monthly = read_giss_monthly()
+giss_monthly.rebaseline(1961,1990)
+giss_ts = giss_monthly.annualise(9)
+giss_ts.add_name("GISTEMP")
+
+combined_ts = combine_series(had_ts, ncdc_ts, giss_ts)
+combined_ts.add_name("Combined")
+
+
+had_ts.print_ordered_ts(5)
+ncdc_ts.print_ordered_ts(5)
+giss_ts.print_ordered_ts(5)
+combined_ts.print_ordered_ts(5)
