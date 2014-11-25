@@ -33,7 +33,7 @@ months = []
 for y in range(1850,2015):
     lmn  = 12
     if y == 2014:
-        lmn = 9
+        lmn = 10
     for m in range(1,lmn+1):
         years.append(y)
         months.append(m)
@@ -131,6 +131,9 @@ plt.show()
 
 ts_samerica_monthly = monthly_time_series(years,months,ts_samerica)
 ts_samerica_annual = ts_samerica_monthly.annualise()
+
+ts_samerica_annual.plot_ts("Green")
+plt.show()
 
 ts_europe_monthly = monthly_time_series(years, months, ts_europe)
 ts_europe_annual = ts_europe_monthly.annualise()
