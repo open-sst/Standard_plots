@@ -195,8 +195,8 @@ def read_giss_block_monthly(f, block_length, giss_year, giss_month, giss_anom):
     return (giss_year, giss_month, giss_anom)
 
 def read_giss_monthly():
-#    f = open('Data/GLB.Ts+dSST.txt','r')
-    f = open('Data/GLB.TsERSST.GHCN.CL.PA.txt','r')
+    f = open('Data/GLB.Ts+dSST.txt','r')
+#    f = open('Data/GLB.TsERSST.GHCN.CL.PA.txt','r')
 
     giss_year = []
     giss_month = []
@@ -242,8 +242,8 @@ def read_giss_block(f, block_length, giss_year, giss_anom):
 
 
 def read_giss():
-#    f = open('Data/GLB.Ts+dSST.txt','r')
-    f = open('Data/GLB.TsERSST.GHCN.CL.PA.txt','r')
+    f = open('Data/GLB.Ts+dSST.txt','r')
+#    f = open('Data/GLB.TsERSST.GHCN.CL.PA.txt','r')
     
     giss_year = []
     giss_anom = []
@@ -313,6 +313,36 @@ def read_cowtan_and_way(version):
                           cw_hiunc)
 
     return cw_ts
+
+def read_cowtan_and_way_monthly(version):
+    f = open('Data/had4_krig_'+version+'.txt','r')
+
+    cw_year = []
+    cw_month = []
+    cw_anom = []
+
+    # Loop over lines and extract variables of interest
+    m=1
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+        cw_year.append(float(int(float(columns[0]))))
+        cw_month.append(m)
+        cw_anom.append(float(columns[1]))
+        m += 1
+        if m == 13:
+            m=1
+
+    f.close()
+
+    cw_ts = monthly_time_series(cw_year,
+                                cw_month,
+                                cw_anom)
+
+    return cw_ts
+
+
+    f.close()
 
 def read_cowtan_and_way_hybrid(version):
     f = open('Data/had4_short_uah_annual_'+version+'.txt','r')
