@@ -25,6 +25,89 @@ class monthly_time_series:
         plt.plot([2014,2014],[-1,1],color="Red")
         plt.show()
 
+    def pull_year(self,year):
+
+        thisyr = []
+        for i in range(0,len(self.data)):
+            if self.years[i] == year:
+                thisyr.append(self.data[i])
+ 
+        return thisyr
+
+    def pull_month(self,month):
+
+        thismn = []
+        for i in range(0,len(self.data)):
+            if self.months[i] == month:
+                thismn.append(self.data[i])
+ 
+        return thismn
+
+
+    def pull_year_to_date(self, year):
+
+        year_to_date = []
+        thisyr = self.pull_year(year)
+
+        for i in range(0,len(thisyr)):
+            year_to_date.append(np.mean(thisyr[0:i+1]))
+
+        return year_to_date
+
+    def pull_year_to_date_with_fill(self,year,option=0):
+
+        year_to_date = []
+        thisyr = self.pull_year(year)
+        n = len(thisyr)
+
+        if n < 12:
+            for m in range(n+1,13):
+                allmonths = self.pull_month(m)
+                allmonths.sort()
+                nmonths = len(allmonths)
+                if option == 0:
+                    thisyr.append(allmonths[nmonths-1])
+                elif option == 1:
+                    thisyr.append(allmonths[nmonths-10])
+                elif option == 2:
+                    thisyr.append(allmonths[nmonths-3])
+                elif option == 3:
+                    thisyr.append(np.mean(allmonths[nmonths-10:nmonths-1]))
+                    
+        for i in range(0,len(thisyr)):
+            year_to_date.append(np.mean(thisyr[0:i+1]))
+
+        return year_to_date
+
+    def plot_scenario(self,title):
+
+        ytd = self.pull_year_to_date_with_fill(2014)
+        xax = range(1,13)
+ 
+        for i in range(0,4):
+            ytd = self.pull_year_to_date_with_fill(2014,i)
+            plt.plot(xax,ytd,color="Black",linewidth=2)
+
+        
+
+        years_of_interest = [2010,2005,1998,2013,2003,2014]
+        colours_of_int = ['FireBrick','SteelBlue','DarkGray','DarkGray','DarkGray','Gold']
+        i=0
+        for y in years_of_interest:
+            ytd = self.pull_year_to_date(y)
+            xax = range(1,len(ytd)+1)
+            plt.plot(xax,ytd,color=colours_of_int[i],linewidth=4,label=str(y))
+            i+=1
+
+        
+        plt.title(title)
+        plt.axis((0,16,0.37,0.70))
+        plt.xlabel('Month', fontsize=18)
+        plt.ylabel('Anomaly relative to 1961-1990 (K)', fontsize=18)
+        plt.legend(loc='best')
+        
+        plt.show()
+
     def rebaseline(self,year1,year2):
         #choose new climatology period
         clim = np.zeros(12)
@@ -190,6 +273,7 @@ class time_series:
 
         plt.plot([1949.5,2015.5],[0,0],color="Black")
         plt.axis((1949.5,2015.5,-0.32,0.62))
+#        plt.savefig('test.eps')
         plt.show()
 
 
