@@ -7,30 +7,31 @@ from time import sleep
 #                  ,"Data/")
 
 
-ncdc_version = "v3.5.4.201409"
+ncdc_version = "v3.5.4.201410"
 hadsst_version = "3.1.1.0"
 crutem_version = "4.3.0.0"
 hadcrut_version = "4.3.0.0"
 cowtan_and_way_version = "v2_0_0"
 uah_version = "5.6"
 
-##############
-## JISAO PDO
-##############
+###################
+## CPC ONI / Nino indices
+###################
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.cpc.ncep.noaa.gov/data/indices/3mth.nino34.81-10.ascii.txt" \
+                  ,"Data/3mth.nino34.81-10.ascii.txt")
 
 testfile = urllib.URLopener()
-testfile.retrieve("http://jisao.washington.edu/pdo/PDO.latest" \
-                  ,"Data/PDO.latest")
+testfile.retrieve("http://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt" \
+                  ,"Data/oni.ascii.txt")
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.cpc.ncep.noaa.gov/data/indices/ersst3b.nino.mth.81-10.ascii" \
+                  ,"Data/ersst3b.nino.mth.81-10.ascii")
+
+
 
 assert False
-
-##############
-## UAH MSU
-##############
-
-testfile = urllib.URLopener()
-testfile.retrieve("http://www.nsstc.uah.edu/data/msu/t2lt/uahncdc_lt_"+uah_version+".txt" \
-                  ,"Data/uahncdc_lt_"+uah_version+".txt")
 
 #################
 ## Cowtan and Way
@@ -55,6 +56,8 @@ testfile.retrieve("http://www-users.york.ac.uk/~kdc3/papers/coverage2013/had4_sh
                   ,"Data/had4_short_uah_annual_"+cowtan_and_way_version+".txt")
 
 
+assert False
+
 ################
 ## NCDC
 ################
@@ -77,6 +80,24 @@ testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/a
 testfile = urllib.URLopener()
 testfile.retrieve("ftp://ftp.ncdc.noaa.gov/pub/data/mlost/operational/products/aravg.ann.land_ocean.90S.90N."+ncdc_version+".asc" \
                   ,"Data/aravg.ann.land_ocean.90S.90N."+ncdc_version+".asc")
+
+assert False
+
+##############
+## JISAO PDO
+##############
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://jisao.washington.edu/pdo/PDO.latest" \
+                  ,"Data/PDO.latest")
+
+##############
+## UAH MSU
+##############
+
+testfile = urllib.URLopener()
+testfile.retrieve("http://www.nsstc.uah.edu/data/msu/t2lt/uahncdc_lt_"+uah_version+".txt" \
+                  ,"Data/uahncdc_lt_"+uah_version+".txt")
 
 
 ########################
