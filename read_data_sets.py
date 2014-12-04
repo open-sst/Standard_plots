@@ -1,6 +1,319 @@
 import numpy as np
 from time_series import *
 
+def slices(s, *args):
+    position = 0
+    splits = []
+    for length in args:
+        splits.append(s[position:position + length])
+        position += length
+    return splits
+
+def read_oni_nino_categories():
+    oni = read_oni()
+
+    threshold = 1.0
+
+    y1 = int(min(oni.years))
+    y2 = int(max(oni.years))
+
+    nino = []
+    years = []
+
+    for y in range(y1+1,y2+1):
+        lastyr = oni.pull_year(y-1)
+        thisyr = oni.pull_year(y)
+        cat = 0
+
+        ct=0
+        if lastyr[9] > threshold:
+            ct+=1
+        if lastyr[10] > threshold:
+            ct+=1
+        if lastyr[11] > threshold:
+            ct+=1
+        
+        if ct>=3:
+            cat = 1
+
+        ct=0
+        if lastyr[9] < -1.*threshold:
+            ct+=1
+        if lastyr[10] < -1.*threshold:
+            ct+=1
+        if lastyr[11] < -1.*threshold:
+            ct+=1
+        
+        if ct>=3:
+            cat = -1
+
+        years.append(float(y))
+        nino.append(cat)
+
+    return time_series(years,nino,nino[:],nino[:])
+
+def read_oni():
+    f = open('Data/oni.ascii.txt','r')
+    f.readline()
+
+    oni =[]
+    years = []
+    months = []
+
+    m = 1.0
+
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+
+        oni.append(float(columns[3]))
+        years.append(float(columns[1]))
+        months.append(m)
+        m+=1.
+        if m > 12:
+            m=1.0
+            
+    f.close()
+
+    return monthly_time_series(years,months,oni)
+
+
+def read_cet():
+    f = open('Data/cetml1659on.dat','r')
+    for i in range(1,8):
+        f.readline()
+
+    cet_years = []
+    cet_months = []
+    cet_data = []
+
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+
+        for i in range(0,12):
+            if float(columns[i+1]) != -99.9:
+                cet_years.append(float(columns[0]))
+                cet_months.append(float(i+1))
+                cet_data.append(float(columns[i+1]))
+   
+    f.close()
+    cet = monthly_time_series(cet_years,cet_months,cet_data)
+    return cet
+
+
+
+def read_soi():
+    f = open('Data/soi', 'r')
+
+    year = []
+    month = []
+    data = []
+
+    for i in range(1,5):
+        f.readline()
+
+    readon = 1
+
+    for line in f:
+        if readon == 1:
+            line = line.strip()
+            line = slices(line,4,6,6,6,6,6,6,6,6,6,6,6,6)
+
+            for i in range(1,13):
+                if float(line[i]) != -999.9:
+                    year.append(float(line[0]))
+                    month.append(float(i))
+                    data.append(float(line[i]))
+
+            if line[0] == "2014":
+                readon = 0
+                    
+
+    f.close()
+    soi = monthly_time_series(year,month,data)
+    return soi
+
+def read_nino1():
+    return read_psd('Data/nina1.data')
+
+def read_nino4():
+    return read_psd('Data/nina4.data')
+
+def read_nino34():
+    return read_psd('Data/nina34.data')
+
+def read_psd(filename):
+
+    f = open(filename,'r')
+
+    line = f.readline()
+    line = line.strip()
+    line = line.split()
+
+    year1 = float(line[0])
+    year2 = float(line[1])
+
+    year = []
+    month = []
+    data = []
+
+    readon = 1
+
+    for line in f:
+        if readon == 1:
+            line = line.strip()
+            line = line.split()
+
+            for i in range(1,13):
+                if float(line[i]) != -99.99:
+                    year.append(float(line[0]))
+                    month.append(float(i))
+                    data.append(float(line[i]))
+
+            if float(line[0]) == year2:
+                readon = 0
+
+
+    f.close()
+    
+    psd = monthly_time_series(year,month,data)
+    return psd
+
+def read_nao():
+    f= open('Data/nao_index.tim', 'r')
+
+    year = []
+    month = []
+    data = []
+
+    for i in range(1,10):
+        f.readline()
+
+    for line in f:
+        line = line.strip()
+        line = line.split()
+        year.append(float(line[0]))
+        month.append(float(line[1]))
+        data.append(float(line[2]))
+
+    f.close()
+
+    nao = monthly_time_series(year,month,data)
+    return nao
+
+def read_ao():
+    f = open('Data/monthly.ao.index.b50.current.ascii', 'r')
+
+    year = []
+    month = []
+    data = []
+
+    for line in f:
+        line = line.strip()
+        line = line.split()
+        year.append(float(line[0]))
+        month.append(float(line[1]))
+        data.append(float(line[2]))
+
+    f.close()
+
+    ao = monthly_time_series(year,month,data)
+    return ao
+
+def read_aao():
+    f = open('Data/monthly.aao.index.b79.current.ascii', 'r')
+
+    year = []
+    month = []
+    data = []
+
+    for line in f:
+        line = line.strip()
+        line = line.split()
+        year.append(float(line[0]))
+        month.append(float(line[1]))
+        data.append(float(line[2]))
+
+    f.close()
+
+    aao = monthly_time_series(year,month,data)
+    return aao
+
+
+
+def read_stephenson_trends():
+    f = open("Data/combinedtrend.txt",'r')
+
+    smo_year = []
+    smo_data = []
+    smo_lounc = []
+    smo_hiunc = []
+
+    for line in f:
+        line  = line.strip()
+        columns = line.split()
+
+        smo_year.append(float(columns[0]))
+        smo_data.append(float(columns[1]))
+        smo_lounc.append(float(columns[2]))
+        smo_hiunc.append(float(columns[3]))
+
+    f.close()
+             
+    smo_ts = time_series(smo_year,
+                         smo_data,
+                         smo_lounc,
+                         smo_hiunc)
+
+    return smo_ts
+
+    
+    
+
+def read_era_interim():
+    f=open("Data/ERA_interim_data.txt",'r')
+
+    f.readline()
+
+    era_year = []
+    era_month = []
+    era_data = []
+
+    for line in f:
+        line = line.strip()
+        era_year.append(float(line[0:4]))
+        era_month.append(float(line[4:7]))
+        era_data.append(float(line[7:16]))
+
+    f.close()
+
+    era_ts = monthly_time_series(era_year, era_month, era_data)
+
+    return era_ts
+
+def read_era_interim_crutd():
+    f=open("Data/ERA_interim_data_sampled_as_HadCRUT.txt",'r')
+
+    f.readline()
+
+    era_year = []
+    era_month = []
+    era_data = []
+
+    for line in f:
+        line = line.strip()
+        era_year.append(float(line[0:4]))
+        era_month.append(float(line[4:7]))
+        era_data.append(float(line[7:16]))
+
+    f.close()
+
+    era_ts = monthly_time_series(era_year, era_month, era_data)
+
+    return era_ts
+
+
 def read_jisao_pdo():
     f=open("Data/PDO.latest",'r')
 
@@ -196,7 +509,6 @@ def read_giss_block_monthly(f, block_length, giss_year, giss_month, giss_anom):
 
 def read_giss_monthly():
     f = open('Data/GLB.Ts+dSST.txt','r')
-#    f = open('Data/GLB.TsERSST.GHCN.CL.PA.txt','r')
 
     giss_year = []
     giss_month = []
@@ -316,6 +628,36 @@ def read_cowtan_and_way(version):
 
 def read_cowtan_and_way_monthly(version):
     f = open('Data/had4_krig_'+version+'.txt','r')
+
+    cw_year = []
+    cw_month = []
+    cw_anom = []
+
+    # Loop over lines and extract variables of interest
+    m=1
+    for line in f:
+        line = line.strip()
+        columns = line.split()
+        cw_year.append(float(int(float(columns[0]))))
+        cw_month.append(m)
+        cw_anom.append(float(columns[1]))
+        m += 1
+        if m == 13:
+            m=1
+
+    f.close()
+
+    cw_ts = monthly_time_series(cw_year,
+                                cw_month,
+                                cw_anom)
+
+    return cw_ts
+
+
+    f.close()
+
+def read_cowtan_and_way_hybrid_monthly(version):
+    f = open('Data/had4_short_uah_'+version+'.txt','r')
 
     cw_year = []
     cw_month = []
